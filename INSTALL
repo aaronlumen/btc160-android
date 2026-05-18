@@ -1,0 +1,294 @@
+● Write(bitcoin-solver/cloudflare_tunnel_setup.sh)
+  ⎿  Wrote 118 lines to bitcoin-solver/cloudflare_tunnel_setup.sh
+     #!/usr/bin/env bash
+     # Cloudflare Tunnel setup for BTC160 DGX Spark (ARM64)
+     #
+     # Exposes localhost:8000 (api_server.py) via a stable HTTPS URL that
+     # Android phones worldwide can reach without any port forwarding.
+     #
+     # ─── QUICK START (temp URL, no account needed) ────────────────────────────────
+     #   bash cloudflare_tunnel_setup.sh quick
+     #
+     #   Prints a URL like https://random-words.trycloudflare.com
+     … +108 lines (ctrl+o to expand)
+
+● Bash(chmod +x /home/toor/Desktop/bitcoin-solver/cloudflare_tunnel_setup.sh /home/toor/Desktop/bitcoin-solver/api_start.sh)
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ what do I use for an admin key and app key?                                                                                                                                           
+
+● Both are just random secret strings you generate yourself — no external service needed.
+
+  Generate them right now on the DGX:
+  # App key (goes in APK)
+  python3 -c "import secrets; print('APP:',  secrets.token_hex(24))"
+
+  # Admin key (stays on DGX only, never in APK)
+  python3 -c "import secrets; print('ADMIN:', secrets.token_hex(24))"
+
+  Example output:
+  APP:  a3f9c12e84b7d6f0219e5c3a7f8b4d2e1c0a9f8e
+  ADMIN: 9b2e7f4c1a6d3e8f5c2b9a7d4e1f6c3b8a5d2e
+
+  Where each one lives:
+  
+  ┌──────────────────┬───────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────┐
+  │       Key        │                             Where it goes                             │                    Who uses it                     │
+  ├──────────────────┼───────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────┤
+  │ BTC160_APP_KEY   │ Android APK (hardcoded string resource or build config) + DGX env var │ Every phone on every request                       │
+  ├──────────────────┼───────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────┤
+  │ BTC160_ADMIN_KEY │ DGX env var only — never in APK, never on phones                      │ You manually, via curl from the DGX or your laptop │
+  └──────────────────┴───────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────┘
+
+  Start the server with both:
+  BTC160_APP_KEY=a3f9c12e84b7d6f0... \
+  BTC160_ADMIN_KEY=9b2e7f4c1a6d3e8f... \
+  bash api_start.sh
+
+  Put the app key in the Android build — add it to local.properties (which is git-ignored) and read it as a BuildConfig field, so it never ends up hardcoded in source control. That's
+  the cleanest approach.
+  
+  The app key leaking is a nuisance (someone could spam your API) but not a financial risk. The admin key leaking would let someone stop your DGX search — keep that one private.
+  
+✻ Worked for 24s
+
+❯ is this all finished?                                                                                                                                                                 
+
+● Not quite — most of it is done but there are a few gaps. Let me check the one file I know needs updating:
+
+  Read 1 file (ctrl+o to expand)
+
+● Almost — but Chunk71ViewModel.kt will fail to compile because the DgxRepository constructor signature changed and three method calls have mismatched arguments. Here's the full
+  status:
+
+  Done ✅
+  - api_server.py, api_start.sh, cloudflare_tunnel_setup.sh
+  - build.gradle.kts (BouncyCastle added)
+  - AndroidManifest.xml (permissions, CelebrationActivity, SearchService)
+  - Models.kt, BitcoinUtils.kt, WalletManager.kt, DgxApi.kt, DgxRepository.kt
+  - SearchService.kt, CelebrationActivity.kt, activity_celebration.xml
+  - SettingsFragment.kt, fragment_settings.xml
+  - PuzzlesViewModel.kt, PuzzlesFragment.kt, PuzzlesAdapter.kt
+  - item_puzzle.xml, fragment_puzzles.xml, strings.xml
+
+  Needs fixing ❌
+
+  1. Chunk71ViewModel.kt — 4 compile errors:
+    - DgxRepository(prefs) → constructor now takes Context, not SharedPreferences
+    - repo.fetchChunkInfo(idx) → now requires (puzzle=71, idx)
+    - repo.launchChunk(idx) → first param is puzzle, so launchChunk(3) passes 3 as puzzle not idx
+    - repo.markDone(idx) → same issue
+  2. strings.xml — Aaron's phone number is still +15555551234 placeholder
+  3. chmod +x on the two shell scripts (was blocked earlier)
+  4. App key in APK — needs a BuildConfig field so it's not hardcoded in source
+
+  Read 1 file (ctrl+o to expand)
+
+● Updated plan
+  ⎿  /plan to preview
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ Ready to code?
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Plan: Fix remaining compile errors + cleanup
+
+ Status
+
+ Most implementation is DONE. These are the remaining fixes needed before the build compiles.
+
+ Context
+
+ The Android app was hardcoded to RFC1918 (192.168.1.100:8000) — unreachable outside the LAN.
+ Finders will be worldwide. The winning key is worth ~$100K USD; we cannot rely on a manual
+ submission button (attack vector, user error). Instead: automatic detection → encrypted
+ transmission → immediate DGX sweep, with celebration UI and Aaron's contact number displayed.
+
+ Architecture
+
+ [Phone anywhere] → HTTPS → [Cloudflare edge] → tunnel → [DGX:8000 / api_server.py]
+                    auto-POST on key found ↑              ↓ sweep TX (high fee, immediate)
+                    retry loop (persist key locally)      ↓
+                                                          [Finder's Bitcoin address]
+
+ Cloudflare Tunnel: outbound-only TLS, no port-forwarding. Quick-start (trycloudflare.com temp
+ URL) and production (named tunnel + custom domain) both documented in setup script.
+
+ API key (X-API-Key header) protects all endpoints.
+
+ Security principles
+
+ - Found key never exposed to user — auto-POST only; key stored encrypted in SharedPrefs
+ as backup retry cache; never shown on screen
+ - On-device wallet — each phone generates its own Bitcoin keypair; private key stays on
+ device forever; only the public address is registered with DGX for payout
+ - Front-running defence — DGX verifies key cryptographically then broadcasts sweep TX
+ with high fee priority (RBF, sat/vB >> current mempool) within seconds of receipt
+ - Deduplication — DGX accepts first valid submission for each puzzle; subsequent identical
+ submissions return accepted=false with "already claimed"
+ - Retry until confirmed — phone retries POST every 10 s until DGX returns confirmed=true;
+ encrypted key persists in SharedPrefs so retries survive app restart
+
+ Files to change
+
+ Server
+
+ ┌──────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │                     File                     │                                                              Change                                                              │
+ ├──────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ bitcoin-solver/api_server.py                 │ API key auth, puzzle registry (71/135/140/145/150/155/160), parameterize all endpoints, add GET /puzzles, POST /register, POST   │
+ │                                              │ /found/{puzzle} (verify + log + trigger sweep)                                                                                   │
+ ├──────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ bitcoin-solver/api_start.sh                  │ Accept BTC160_API_KEY env var                                                                                                    │
+ ├──────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ New:                                         │ ARM64 cloudflared install + quick-start + production setup                                                                       │
+ │ bitcoin-solver/cloudflare_tunnel_setup.sh    │                                                                                                                                  │
+ └──────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+ Android
+
+ ┌───────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │                     File                      │                                                             Change                                                              │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ data/DgxApi.kt                                │ OkHttp X-API-Key interceptor; parameterize all endpoints; add POST register, POST found/{puzzle}                                │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ data/DgxRepository.kt                         │ API key interceptor; fetchPuzzles(); registerDevice(address,contact); submitFoundKey(puzzle,hexKey,deviceId,address) with retry │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ data/Models.kt                                │ Add RegisterRequest, FoundKeyRequest, FoundKeyResponse, PuzzleStatusItem                                                        │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ data/WalletManager.kt (NEW)                   │ Generate secp256k1 keypair on device; store encrypted in KeyStore; expose address: String only                                  │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/registration/RegistrationFragment.kt (NEW) │ First-launch screen: generate wallet, enter contact (name/phone), register with DGX, then proceed to main                       │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/settings/SettingsFragment.kt               │ Add API key field, show wallet address (read-only), contact info                                                                │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/celebration/CelebrationActivity.kt (NEW)   │ Full-screen gold/orange flash, alarm sound loop, wake lock, Aaron's number as clickable tel: link                               │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/chunk71/Chunk71ViewModel.kt                │ Pass puzzle=71 explicitly; emit keyFound event → triggers auto-submit + CelebrationActivity                                     │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/puzzles/PuzzlesViewModel.kt (NEW)          │ Fetch live status for 7 targets                                                                                                 │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ ui/puzzles/PuzzlesFragment.kt                 │ Wire PuzzlesViewModel; show live badges ("SEARCHING"/"IDLE"/"OFFLINE")                                                          │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ res/layout/fragment_settings.xml              │ Add et_api_key, tv_wallet_address (read-only), et_contact                                                                       │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ res/layout/activity_celebration.xml (NEW)     │ Full-screen layout: pulsing bitcoin logo, "YOU FOUND IT", Aaron's number                                                        │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ res/layout/item_puzzle.xml                    │ Add tv_live_status badge                                                                                                        │
+ ├───────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+ │ res/values/strings.xml                        │ New strings for registration, celebration, contact number                                                                       │
+ └───────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+ Implementation details
+
+ api_server.py — new/changed endpoints
+
+ POST /register          → body: {device_id, btc_address, contact}
+                           stores in finders.json; returns {registered: true}
+
+ POST /found/{puzzle}    → body: {hex_key, device_id, btc_address}
+                           1. verify hex_key derives to puzzle's target address (libsecp256k1 or coincurve)
+                           2. check finders.json for dedup (puzzle already claimed → return accepted=false)
+                           3. append to found_keys.json with timestamp + device_id
+                           4. mark puzzle claimed in claimed.json
+                           5. log to stderr: "*** KEY FOUND puzzle={puzzle} key={hex_key} ***"
+                           6. (optional hook) call sweep_btc.sh in background
+                           return {accepted, confirmed, message}
+
+ WalletManager.kt (new)
+
+ object WalletManager {
+     // Generate on first use, store in Android KeyStore (hardware-backed if available)
+     fun getOrCreateAddress(context: Context): String  // returns Base58Check address
+     fun getDeviceId(context: Context): String         // stable UUID from prefs
+ }
+
+ Auto-submit flow in search ViewModel
+
+ // When key found in chunk search:
+ fun onKeyFound(puzzle: Int, hexKey: String) {
+     val address = WalletManager.getOrCreateAddress(ctx)
+     val deviceId = WalletManager.getDeviceId(ctx)
+     // Persist encrypted to SharedPrefs (retry cache)
+     prefs.edit().putString("pending_key_$puzzle", hexKey).apply()
+     │ ───┤                                                                                                                                                                            │
+     │ │ res/values/strings.xml                        │ New strings for registration, celebration, contact number                                                                     │
+     │    │                                                                                                                                                                            │
+     │ └───────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
+     │ ───┘                                                                                                                                                                            │
+     │                                                                                                                                                                                 │
+     │ Implementation details                                                                                                                                                          │
+     │                                                                                                                                                                                 │
+     │ api_server.py — new/changed endpoints                                                                                                                                           │
+     │                                                                                                                                                                                 │
+     │ POST /register          → body: {device_id, btc_address, contact}                                                                                                               │
+     │                           stores in finders.json; returns {registered: true}                                                                                                    │
+     │                                                                                                                                                                                 │
+     │ POST /found/{puzzle}    → body: {hex_key, device_id, btc_address}                                                                                                               │
+     │                           1. verify hex_key derives to puzzle's target address (libsecp256k1 or coincurve)                                                                      │
+     │                           2. check finders.json for dedup (puzzle already claimed → return accepted=false)                                                                      │
+     │                           3. append to found_keys.json with timestamp + device_id                                                                                               │
+     │                           4. mark puzzle claimed in claimed.json                                                                                                                │
+     │                           5. log to stderr: "*** KEY FOUND puzzle={puzzle} key={hex_key} ***"                                                                                   │
+     │                           6. (optional hook) call sweep_btc.sh in background                                                                                                    │
+     │                           return {accepted, confirmed, message}                                                                                                                 │
+     │                                                                                                                                                                                 │
+     │ WalletManager.kt (new)                                                                                                                                                          │
+     │                                                                                                                                                                                 │
+     │ object WalletManager {                                                                                                                                                          │
+     │     // Generate on first use, store in Android KeyStore (hardware-backed if available)                                                                                          │
+     │     fun getOrCreateAddress(context: Context): String  // returns Base58Check address                                                                                            │
+     │     fun getDeviceId(context: Context): String         // stable UUID from prefs                                                                                                 │
+     │ }                                                                                                                                                                               │
+     │                                                                                                                                                                                 │
+     │ Auto-submit flow in search ViewModel                                                                                                                                            │
+     │                                                                                                                                                                                 │
+     │ // When key found in chunk search:                                                                                                                                              │
+     │ fun onKeyFound(puzzle: Int, hexKey: String) {                                                                                                                                   │
+     │     val address = WalletManager.getOrCreateAddress(ctx)                                                                                                                         │
+     │     val deviceId = WalletManager.getDeviceId(ctx)                                                                                                                               │
+     │     // Persist encrypted to SharedPrefs (retry cache)                                                                                                                           │
+     │     prefs.edit().putString("pending_key_$puzzle", hexKey).apply()                                                                                                               │
+     │     // Launch coroutine with retry                                                                                                                                              │
+     │     viewModelScope.launch {                                                                                                                                                     │
+     │         var confirmed = false                                                                                                                                                   │
+     │         while (!confirmed) {                                                                                                                                                    │
+     │             val r = repo.submitFoundKey(puzzle, hexKey, deviceId, address)                                                                                                      │
+     │             if (r.confirmed) { confirmed = true; prefs.edit().remove("pending_key_$puzzle").apply() }                                                                           │
+     │             else delay(10_000)                                                                                                                                                  │
+     │         }                                                                                                                                                                       │
+     │     }                                                                                                                                                                           │
+     │     // Immediately launch celebration                                                                                                                                           │
+     │     _keyFoundEvent.value = puzzle                                                                                                                                               │
+     │ }                                                                                                                                                                               │
+     │                                                                                                                                                                                 │
+     │ CelebrationActivity                                                                                                                                                             │
+     │                                                                                                                                                                                 │
+     │ - FLAG_KEEP_SCREEN_ON + WAKE_LOCK                                                                                                                                               │
+     │ - Animate background: rapid gold/orange/white pulses (ObjectAnimator on backgroundColor)                                                                                        │
+     │ - Play alarm: RingtoneManager.getDefaultUri(TYPE_ALARM) on loop                                                                                                                 │
+     │ - Display: "YOU FOUND THE KEY!", puzzle number, Aaron's number as tel: link                                                                                                     │
+     │ - Vibrate: VibrationEffect.createWaveform([0,500,200,500], 0) repeating                                                                                                         │
+     │                                                                                                                                                                                 │
+     │ Default URL                                                                                                                                                                     │
+     │                                                                                                                                                                                 │
+     │ DgxRepository.DEFAULT_URL = "https://btc160.trycloudflare.com"                                                                                                                  │
+     │ (placeholder — user replaces in Settings with actual tunnel URL)                                                                                                                │
+     │                                                                                                                                                                                 │
+     │ cloudflare_tunnel_setup.sh                                                                                                                                                      │
+     │                                                                                                                                                                                 │
+     │ Quick-start: cloudflared tunnel --url http://localhost:8000 → prints temp URL                                                                                                   │
+     │ Production: login → create tunnel → config.yml → DNS route → systemd service                                                                                                    │
+     │                                                                                                                                                                                 │
+     │ Verification                                                                                                                                                                    │
+     │                                                                                                                                                                                 │
+     │ 1. BTC160_API_KEY=testkey python3 api_server.py → server starts                                                                                                                 │
+     │ 2. curl -H "X-Api-Key: testkey" localhost:8000/puzzles → 7 puzzles                                                                                                              │
+     │ 3. curl -X POST ... localhost:8000/register → finders.json created                                                                                                              │
+     │ 4. curl -X POST ... localhost:8000/found/71 (valid key) → accepted=true, found_keys.json updated                                                                                │
+     │ 5. curl -X POST ... localhost:8000/found/71 (same key again) → accepted=false "already claimed"                                                                                 │
+     │ 6. Android: first launch → RegistrationFragment → wallet generated → registered with DGX                                                                                        │
+     │ 7. Android: Puzzles tab shows 7 targets with live badges                                                                                                                        │
+     │ 8. Android: simulate keyFound → CelebrationActivity fires, alarm plays, Aaron's number shown                                                                                    │
+     │ 9. Android: kill app mid-retry → restart → retry resumes from SharedPrefs cache 

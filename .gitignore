@@ -1,3 +1,5 @@
+.appkey
+.adminkey
 *.iml
 .gradle/
 local.properties
