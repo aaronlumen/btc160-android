@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/lib/android-sdk/cmdline-tools/latest/bin/**)",
+      "Bash(curl -s \"https://dl.google.com/android/repository/repository2-3.xml\")",
+      "Bash(waydroid status *)",
+      "Bash(lsmod)",
+      "Read(//dev/**)",
+      "Read(//proc/**)",
+      "Bash(dpkg -l weston cage)",
+      "Bash(modprobe binder_linux)",
+      "Bash(modprobe ashmem_linux)",
+      "Bash(modinfo binder_linux)",
+      "Bash(python3 -c ' *)",
+      "Bash(sudo apt-get install -y curl ca-certificates)",
+      "Bash(curl https://repo.waydro.id)",
+      "Bash(sudo bash)",
+      "Bash(waydroid --version)",
+      "Bash(dpkg -l waydroid)",
+      "Read(//usr/lib/android-sdk/platform-tools/**)",
+      "Bash(/usr/bin/adb version *)",
+      "Read(//opt/Android/Sdk/platform-tools/**)",
+      "Bash(/opt/Android/Sdk/platform-tools/adb version *)",
+      "Bash(apt-cache search *)",
+      "Bash(apt-cache show *)",
+      "Bash(sudo apt-get install -y adb)",
+      "Bash(curl -sIL \"https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2025.1.1.14/android-studio-2025.1.1.14-linux_aarch64.tar.gz\")",
+      "Bash(curl -sI -L \"https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2025.1.1.14/android-studio-2025.1.1.14-linux_aarch64.tar.gz\")"
+    ]
+  }
+}
