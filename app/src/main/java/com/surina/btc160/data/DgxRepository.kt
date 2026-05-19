@@ -14,7 +14,7 @@ class DgxRepository(private val prefs: SharedPreferences) {
 
     companion object {
         const val KEY_SERVER_URL = "server_url"
-        val DEFAULT_URL: String  = BuildConfig.SERVER_URL.ifBlank { "http://192.168.4.32:8000" }
+        val DEFAULT_URL: String  = BuildConfig.SERVER_URL.ifBlank { "https://puzzle.e164.cloud" }
     }
 
     private var _serverUrl = prefs.getString(KEY_SERVER_URL, DEFAULT_URL) ?: DEFAULT_URL
