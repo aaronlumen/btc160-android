@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Phone Hunt"
+            android:textColor="@color/orange"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Search Bitcoin Puzzle 71 from your phone"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:paddingBottom="16dp" />
+
+        <!-- status card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/card_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="IDLE"
+                android:textColor="@color/orange"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/tv_speed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/green"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:paddingTop="4dp" />
+
+            <TextView
+                android:id="@+id/tv_chunk_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:paddingTop="4dp" />
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="10dp"
+                android:progress="0"
+                android:max="100" />
+
+            <TextView
+                android:id="@+id/tv_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                android:paddingTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- start / stop buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Start Hunt"
+                android:enabled="false"
+                app:backgroundTint="@color/orange" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_stop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Stop"
+                android:enabled="false"
+                app:backgroundTint="@color/card_surface" />
+
+        </LinearLayout>
+
+        <!-- player info (shown when registered) -->
+        <TextView
+            android:id="@+id/tv_player_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="@color/green"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:visibility="gone"
+            android:paddingBottom="16dp" />
+
+        <!-- registration form (shown when not registered) -->
+        <LinearLayout
+            android:id="@+id/layout_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/card_surface"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Register to Hunt"
+                android:textColor="@color/orange"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Player name"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                app:boxBackgroundColor="@color/card_surface">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_player_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="YourNickname"
+                    android:inputType="text"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your Bitcoin payout address"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                app:boxBackgroundColor="@color/card_surface">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_btc_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="1YourBitcoinAddress…"
+                    android:inputType="text"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_register"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Register"
+                app:backgroundTint="@color/orange" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

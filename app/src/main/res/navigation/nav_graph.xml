@@ -23,4 +23,9 @@
         android:id="@+id/settingsFragment"
         android:name="com.surina.btc160.ui.settings.SettingsFragment"
         android:label="Settings" />
+
+    <fragment
+        android:id="@+id/huntFragment"
+        android:name="com.surina.btc160.ui.hunt.HuntFragment"
+        android:label="Hunt" />
 </navigation>

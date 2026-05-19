@@ -82,6 +82,24 @@ class DgxRepository(private val prefs: SharedPreferences) {
         }
     }
 
+    // ── phone hunt ────────────────────────────────────────────────────────────
+
+    suspend fun register(body: RegisterRequest): UiState<RegisterResponse> = withContext(Dispatchers.IO) {
+        safeCall { api.register(body) }
+    }
+
+    suspend fun claimChunk(playerToken: String, puzzle: Int = 71): UiState<ClaimResponse> = withContext(Dispatchers.IO) {
+        safeCall { api.claimChunk(ClaimRequest(playerToken, puzzle)) }
+    }
+
+    suspend fun heartbeat(chunkId: String, playerToken: String, keysChecked: Long, speedKps: Float): UiState<HeartbeatResponse> = withContext(Dispatchers.IO) {
+        safeCall { api.heartbeat(chunkId, HeartbeatRequest(playerToken, keysChecked, speedKps)) }
+    }
+
+    suspend fun completeChunk(chunkId: String, body: CompleteRequest): UiState<CompleteResponse> = withContext(Dispatchers.IO) {
+        safeCall { api.completeChunk(chunkId, body) }
+    }
+
     private suspend fun <T> safeCall(block: suspend () -> retrofit2.Response<T>): UiState<T> {
         return try {
             val resp = block()

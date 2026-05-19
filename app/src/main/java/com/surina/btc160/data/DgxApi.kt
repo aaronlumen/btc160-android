@@ -22,4 +22,24 @@ interface DgxApi {
 
     @POST("mark_done/71/{idx}")
     suspend fun markDone(@Path("idx") idx: Int): Response<Map<String, Any>>
+
+    // ── phone hunt endpoints ──────────────────────────────────────────────────
+
+    @POST("register")
+    suspend fun register(@Body body: RegisterRequest): Response<RegisterResponse>
+
+    @POST("phone/claim")
+    suspend fun claimChunk(@Body body: ClaimRequest): Response<ClaimResponse>
+
+    @POST("phone/heartbeat/{chunkId}")
+    suspend fun heartbeat(
+        @Path("chunkId", encoded = true) chunkId: String,
+        @Body body: HeartbeatRequest,
+    ): Response<HeartbeatResponse>
+
+    @POST("phone/complete/{chunkId}")
+    suspend fun completeChunk(
+        @Path("chunkId", encoded = true) chunkId: String,
+        @Body body: CompleteRequest,
+    ): Response<CompleteResponse>
 }
