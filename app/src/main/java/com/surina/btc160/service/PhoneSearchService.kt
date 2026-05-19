@@ -26,6 +26,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.math.BigInteger
@@ -96,7 +97,7 @@ class PhoneSearchService : Service() {
     // ── core search loop ──────────────────────────────────────────────────────
 
     private suspend fun runSearch(playerToken: String) {
-        while (isActive && scope.isActive) {
+        while (currentCoroutineContext().isActive) {
             // claim a chunk
             _state.value = SearchState.Claiming
             updateNotification("Claiming chunk…")
@@ -148,7 +149,7 @@ class PhoneSearchService : Service() {
 
         var key = start
         while (key <= end) {
-            if (!scope.isActive) return null
+            if (!currentCoroutineContext().isActive) return null
 
             val address = BitcoinUtils.pointToAddress(point)
             if (address == target) {
