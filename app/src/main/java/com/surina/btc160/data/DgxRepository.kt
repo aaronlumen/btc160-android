@@ -1,8 +1,10 @@
 package com.surina.btc160.data
 
 import android.content.SharedPreferences
+import com.surina.btc160.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.SocketTimeoutException
@@ -12,7 +14,7 @@ class DgxRepository(private val prefs: SharedPreferences) {
 
     companion object {
         const val KEY_SERVER_URL = "server_url"
-        const val DEFAULT_URL    = "http://192.168.1.100:8000"
+        val DEFAULT_URL: String  = BuildConfig.SERVER_URL.ifBlank { "http://192.168.4.32:8000" }
     }
 
     private var _serverUrl = prefs.getString(KEY_SERVER_URL, DEFAULT_URL) ?: DEFAULT_URL
@@ -22,8 +24,19 @@ class DgxRepository(private val prefs: SharedPreferences) {
 
     private fun buildApi(url: String): DgxApi {
         val base = if (url.endsWith("/")) url else "$url/"
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder()
+                        .header("X-App-Key",   BuildConfig.APP_KEY)
+                        .header("X-Admin-Key", BuildConfig.ADMIN_KEY)
+                        .build()
+                )
+            }
+            .build()
         return Retrofit.Builder()
             .baseUrl(base)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(DgxApi::class.java)

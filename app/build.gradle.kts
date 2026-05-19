@@ -3,6 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val localProps = java.util.Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+
 android {
     namespace = "com.surina.btc160"
     compileSdk = 34
@@ -13,6 +18,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "APP_KEY",    "\"${localProps["btc160.appKey"]   ?: ""}\"")
+        buildConfigField("String", "ADMIN_KEY",  "\"${localProps["btc160.adminKey"] ?: ""}\"")
+        buildConfigField("String", "SERVER_URL", "\"${localProps["btc160.serverUrl"] ?: "http://192.168.4.32:8000"}\"")
     }
 
     buildTypes {
@@ -30,6 +38,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
