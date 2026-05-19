@@ -29,10 +29,10 @@ class PuzzlesFragment : Fragment() {
 
         binding.toggleSolved.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
-                adapter.updateFilter(checkedId == com.surina.btc160.R.id.btnAll)
+                adapter.updateFilter(checkedId == com.surina.btc160.R.id.btn_all)
             }
         }
-        binding.toggleSolved.check(com.surina.btc160.R.id.btnUnsolved)
+        binding.toggleSolved.check(com.surina.btc160.R.id.btn_unsolved)
     }
 
     override fun onDestroyView() {
